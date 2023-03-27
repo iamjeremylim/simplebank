@@ -27,7 +27,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 		return err
 	}
 
-	q := New(tx)
+	q := New(tx) // New function accepts tx because it is part of DBTX interface
 	err = fn(q)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
@@ -89,7 +89,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 
-		// To prevent deadlock
+		// To prevent deadlock by ensuring each tx run query in the similar order
 		if arg.FromAccountID < arg.ToAccountID {
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
 		} else {
@@ -115,7 +115,7 @@ func addMoney(
 			Amount: amount1,
 		})
 		if err != nil {
-			return
+			return // return similar to return account1, account2, err
 		}
 
 		account2, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{

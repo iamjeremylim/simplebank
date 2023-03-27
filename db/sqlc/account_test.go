@@ -96,5 +96,4 @@ func TestListAccounts(t *testing.T) {
 	for _, account := range accounts {
 		require.NotEmpty(t, account)
 	}
-
 }
