@@ -32,6 +32,7 @@ func TestGetAccountAPI(t *testing.T) {
 			accountID: account.ID,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
+				// gomock.Eq(account.ID) is equal to the ID of the random account we generated above
 				GetAccount(gomock.Any(), gomock.Eq(account.ID)). // I expect GetAccount fn to be called with any ctx and a specific ID arg
 				Times(1).
 				Return(account, nil)
@@ -94,9 +95,14 @@ func TestGetAccountAPI(t *testing.T) {
 
 			// start test server and send request
 			server := NewServer(store)
+			// for testing HTTP API in Go, we don't need to start a real HTTP server
+			// just use the Recorder feature of httptest pkg to record response of API req
 			recorder := httptest.NewRecorder()
 
+			// define the API url path
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
+
+			// create new HTTP req with GET method, GET api url, nil req body
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
